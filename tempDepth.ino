@@ -6,7 +6,7 @@ XBee xbee = XBee();
 TxStatusResponse txStatus = TxStatusResponse();
  
 int led = 13;
-int DS18S20_Pin = 2; //DS18S20 Signal pin on digital 2
+int DS18S20_Pin = 11; //DS18S20 Signal pin on digital 2
 
 //Temperature chip i/o
 OneWire ds(DS18S20_Pin); // on digital pin 2
@@ -30,13 +30,13 @@ void setup(){
 }
  
 void loop(){
-  
+  Serial.println("Looping");
   int i = 0;
   float depthSum = 0;
   float tempSum = 0;
   
   for(int i = 0; i <= 14;) {
-     val = analogRead(aPinIn);              // Read in val (0-1023)
+    val = analogRead(aPinIn);              // Read in val (0-1023)
     Vout = (Vin/1024.0) * float(val);      // Convert to voltage
     Runknown = Rknown*((Vin/Vout) - 1);    // Calculate Runknown
          
@@ -49,8 +49,8 @@ void loop(){
       depthSum += Runknown;
       i++;
     //}
-  
-    delay(100);                           // delay for readability 
+    flashLed(led,2,100);
+    delay(500);                           // delay for readability 
   }
   
   depthSum /= 15;
@@ -160,4 +160,17 @@ float getTemp(){
  
  return TemperatureSum;
  
+}
+
+void flashLed(int pin, int times, int wait) {
+ 
+    for (int i = 0; i < times; i++) {
+      digitalWrite(pin, HIGH);
+      delay(wait);
+      digitalWrite(pin, LOW);
+ 
+      if (i + 1 < times) {
+        delay(wait);
+      }
+    }
 }
