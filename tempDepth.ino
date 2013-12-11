@@ -6,6 +6,9 @@ XBee xbee = XBee();
 TxStatusResponse txStatus = TxStatusResponse();
  
 int led = 13;
+int errorLed = 6;
+int successLed = 7;
+
 int DS18S20_Pin = 11; //DS18S20 Signal pin on digital 2
 
 //Temperature chip i/o
@@ -25,6 +28,8 @@ char delimiter = ',';
 
 void setup(){
   pinMode(led, OUTPUT);
+  pinMode(successLed, OUTPUT);
+  pinMode(errorLed, OUTPUT);
   xbee.begin(9600);
   Serial.begin(9600);
 }
@@ -44,14 +49,17 @@ void loop(){
     float temperature = getTemp();
     float tempF = (temperature * 1.8) + 32;
     
-    //if(tempF > 0 && tempF != 185) {
+    if(tempF > 0 && tempF != 185) {
       tempSum += tempF;
       depthSum += Runknown;
       i++;
-    //}
-    flashLed(led,2,100);
-    delay(500);                           // delay for readability 
+      flashLed(led,1,100);
+    }
+    delay(400);                           // delay for readability 
   }
+  
+  //Flash green led on successful data reading
+  flashLed(successLed,1,1000);
   
   depthSum /= 15;
   tempSum /= 15;
@@ -67,7 +75,9 @@ void loop(){
     retrySend = !sendMessage(payload);
     retryCount++;
     delay(1000);
+    flashLed(errorLed,1,100);
   }
+  flashLed(successLed,2,500);
   
   Serial.println("After to array");
   Serial.print("freeMemory()=");
@@ -93,7 +103,7 @@ boolean sendMessage(String payload){
         Serial.println("Got response");
         // should be a znet tx status                   
         if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
-           xbee.getResponse().getZBTxStatusResponse(txStatus);
+           xbee.getResponse().getTxStatusResponse(txStatus);
  
            // get the delivery status, the fifth byte
            if (txStatus.getStatus() == SUCCESS) {
