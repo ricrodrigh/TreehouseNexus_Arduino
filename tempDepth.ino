@@ -22,8 +22,8 @@ float Vin = 5.0;           // Vcc (5 Volts)
 float Rknown = 1000.0;    // The known resistor (10 kohms)
 float Runknown = 0.0;
 
-char tempKey = 'T';
-char depthKey = 'D';
+String tempKey = "TP001:"; //TempProbe
+String depthKey = "DS002:"; //DepthStrip
 char delimiter = ',';
 
 void setup(){
@@ -59,7 +59,7 @@ void loop(){
   }
   
   //Flash green led on successful data reading
-  flashLed(successLed,1,1000);
+  flashLed(successLed,1,1500);
   
   depthSum /= 15;
   tempSum /= 15;
@@ -67,21 +67,17 @@ void loop(){
   // Join string in a single declaration if memory is an issue
   String payload = tempKey + String(tempSum) + delimiter + 
             depthKey + String(depthSum) + delimiter;
- 
-  //send message to xbee
-  boolean retrySend = true;
-  int retryCount = 0;
-  while(retrySend && retryCount <= 10) {
-    retrySend = !sendMessage(payload);
-    retryCount++;
-    delay(1000);
-    flashLed(errorLed,1,100);
-  }
-  flashLed(successLed,2,500);
-  
   Serial.println("After to array");
   Serial.print("freeMemory()=");
   Serial.println(freeMemory());
+  
+  //send message to xbee
+    boolean successfulSend = sendMessage(payload);
+    if (successfulSend) {
+      flashLed(successLed,2,500);
+    } else {
+      flashLed(errorLed,2,500);
+    }
   
   delay(10000);
 }
